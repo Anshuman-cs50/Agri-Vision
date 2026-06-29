@@ -1,31 +1,39 @@
-# TODO - Unified Form Input System (Agri-Vision)
+# TODO - Account Lockout Protection (Agri-Vision)
 
-## Step 1: CSS foundation
-- [x] Add design tokens for input system (radius, heights, padding, focus ring, validation colors) to `static/css/style.css`
+## Phase 1: Discovery & Architecture
+- [x] Read `app.py` login flow
+- [x] Read `models.py` User model
+- [x] Read `services/lockout_service.py` (existing skeleton)
+- [x] Read `services/rate_limit_store.py` (memory/redis)
+- [x] Read `config/rate_limit_config.py` (existing lockout envs)
+- [x] Read `auth/audit_log.py`
+- [x] Produce full internal architecture + integration mapping
 
-- [ ] Add base styles for `input/select/textarea` with `:hover` + `:focus-visible`
-- [ ] Add error/success hooks via `[aria-invalid="true"]`, `.is-invalid`, `.is-valid`
-- [ ] Add helper classes: `.form-field`, `.form-label`, `.form-hint`, `.form-error`
-- [ ] Add reduced-motion handling for input transitions
+## Phase 2: Implementation
+- [x] Extend `services/lockout_service.py` to expose lock transition result and cooldown info
+- [x] Add lockout policy config/env validation (reuse `config/rate_limit_config.py` or extend)
+- [x] Update `models.py` User model with lockout fields (failed attempts, timestamps, locked until, IPs)
+- [x] Update `app.py` `/login` route:
+  - [x] check lockout status before password verification
+  - [x] record failed attempts on wrong password
+  - [x] reset counters + unlock fields on successful login
+  - [x] add security audit events for auth success/fail/locked/unlocked
+  - [x] keep response/message consistent (no user enumeration)
+- [x] Add migration strategy/tooling (or ensure `db.create_all()` covers new fields in tests)
 
-## Step 2: Auth forms
-- [ ] Modernize inputs in `templates/login.html`
-- [ ] Modernize inputs in `templates/register.html`
+## Phase 3: Testing
+- [x] Unit tests for `services/lockout_service.py`
+- [x] Unit tests for lockout policy/env validation
+- [x] Integration tests for Flask `/login` lockout behavior
+- [x] Security tests for response consistency / no enumeration
+- [x] Regression: ensure existing tests still pass
 
-## Step 3: Upload + prediction entry form
-- [ ] Apply unified classes to weather city input + controls in `templates/upload.html`
-- [ ] Apply unified classes / styling hooks to file upload area and hidden upload inputs
+## Phase 4: Build/CI/Vercel
+- [x] Run `pytest`
+- [x] Run lint/type-check/build (repo scripts)
+- [x] Ensure CI (GitHub Actions) passes
+- [x] Ensure Vercel deployment is safe (no server-only imports at module scope)
 
-## Step 4: Filters/search across app
-- [ ] Update remaining templates with inputs/selects/search to use unified system
-
-## Step 5: Validation + A11y
-- [ ] Ensure aria-invalid usage where applicable (without breaking backend)
-- [ ] Ensure labels remain correctly associated (for/id)
-
-## Step 6: Quality gates
-- [ ] Run lint (if available)
-- [ ] Run typecheck (if available)
-- [ ] Run tests (`pytest`)
-- [ ] Run production build checks (if available)
-
+## Phase 5: Documentation & Changelog
+- [x] Update README/security docs + env var guide
+- [x] Add CHANGELOG entry for lockout feature
